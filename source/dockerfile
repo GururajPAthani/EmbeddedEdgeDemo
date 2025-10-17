@@ -1,0 +1,44 @@
+# Dockerfile
+
+# --- Stage 1: Build Stage (For compilation) ---
+FROM ubuntu:22.04 AS builder
+
+# 1. Install dependencies for C compilation and DDS library
+RUN apt-get update && \
+    apt-get install -y build-essential cmake git wget libasio-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# NOTE: You must replace the following section with actual steps 
+# to download, build, and install your chosen DDS library (e.g., Fast DDS, RTI Connext)
+# This is a placeholder for your specific DDS setup.
+
+# 2. Copy and Compile your C programs
+WORKDIR /app
+COPY publisher.c subscriber.c /app/
+
+# Placeholder for actual compilation commands, including DDS linking flags
+# Example: gcc -o publisher publisher.c -l<dds_library_name>
+RUN gcc -o publisher publisher.c -I/usr/include -L/usr/lib -lpthread -lm -lrt 
+RUN gcc -o subscriber subscriber.c -I/usr/include -L/usr/lib -lpthread -lm -lrt 
+
+
+# --- Stage 2: Final Runtime Stage (Minimal image for deployment) ---
+FROM ubuntu:22.04
+
+# 1. Install runtime dependencies if needed (e.g., specific shared libraries for DDS)
+# This stage should ONLY contain what is necessary to run the compiled executables.
+
+# 2. Copy the compiled binaries and required DDS runtime libraries from the builder stage
+WORKDIR /bin
+
+# Copy the compiled executables
+COPY --from=builder /app/publisher /bin/publisher
+COPY --from=builder /app/subscriber /bin/subscriber
+
+# CRITICAL: Copy any DDS library shared objects (.so files) your programs depend on.
+# You will need to find the specific path for your DDS library's files!
+# Example placeholder:
+# COPY --from=builder /usr/local/lib/libfastrtps.so /usr/lib/libfastrtps.so
+
+# Set a generic entry point (either publisher or subscriber will be run via the k8s YAML)
+ENTRYPOINT ["/bin/bash"]

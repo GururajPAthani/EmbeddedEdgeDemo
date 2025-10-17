@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dds-publisher
+  labels:
+    app: dds-publisher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dds-publisher
+  template:
+    metadata:
+      labels:
+        app: dds-publisher
+    spec:
+      containers:
+      - name: publisher-container
+        # Update this to your local image name/tag
+        image: dds-app:latest
+        
+        # This is CRITICAL for using a locally built image
+        imagePullPolicy: IfNotPresent 
+        
+        # Command to execute the compiled C publisher program
+        command: ["/bin/publisher"]
+        
+        # Optional: Define DDS discovery port (UDP 7400 is common default)
+        ports:
+        - containerPort: 7400
+          protocol: UDP

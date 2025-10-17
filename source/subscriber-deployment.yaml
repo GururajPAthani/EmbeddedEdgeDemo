@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dds-subscriber-deployment
+  labels:
+    app: dds-subscriber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dds-subscriber
+  template:
+    metadata:
+      labels:
+        app: dds-subscriber
+    spec:
+      containers:
+      - name: subscriber-container
+        # Update this to your local image name/tag
+        image: dds-app:latest
+        
+        # This is CRITICAL for using a locally built image
+        imagePullPolicy: IfNotPresent
+        
+        # Command to execute the compiled C subscriber program
+        command: ["/bin/subscriber"]
+        
+        # Optional: Define DDS discovery port (UDP 7400 is common default)
+        ports:
+        - containerPort: 7400
+          protocol: UDP
