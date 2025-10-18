@@ -3,7 +3,7 @@
 // #include <dds/dds.h> // Actual include for your chosen DDS library
 
 int main() {
-    printf("DDS Publisher starting...\n");
+    printf("DDS Publisher starting...Guru\n");
     // 1. Initialize DDS DomainParticipant
     // 2. Create Publisher and Topic (e.g., "HelloWorldTopic")
     // 3. Create a DataWriter
@@ -12,6 +12,6 @@ int main() {
     //    b. Write the sample using the DataWriter
     //    c. Sleep for a short time
     // 5. Cleanup (on exit)
-    printf("Publisher finished sending data.\n");
+    printf("Publisher finished sending data.Guru\n");
     return 0;
 }

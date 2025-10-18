@@ -8,12 +8,12 @@ void data_listener_callback(/* ... */) {
 }
 
 int main() {
-    printf("DDS Subscriber starting...\n");
+    printf("DDS Subscriber starting...Guru\n");
     // 1. Initialize DDS DomainParticipant
     // 2. Create Subscriber and Topic (e.g., "HelloWorldTopic")
     // 3. Create a DataReader and attach a Listener
     // 4. Keep the main thread alive to receive data (e.g., a long sleep or wait)
     // 5. Cleanup (on exit)
-    printf("Subscriber shutting down.\n");
+    printf("Subscriber shutting down.Guru\n");
     return 0;
 }

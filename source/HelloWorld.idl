@@ -1,0 +1,5 @@
+// HelloWorld.idl
+struct DDSMessage {
+    long id;              // A unique identifier/counter
+    string<256> message;  // The actual message content
+};
