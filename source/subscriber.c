@@ -1,19 +1,17 @@
-// subscriber.c
 #include <stdio.h>
-// #include <dds/dds.h> // Actual include for your chosen DDS library
+#include <ddsc/dds.h>
+#include "MyData.h" // Auto-generated from MyData.idl
 
-void data_listener_callback(/* ... */) {
-    // Logic to handle received data
-    printf("Subscriber received data: [MESSAGE CONTENT]\n");
-}
+int main (void) {
+    dds_entity_t participant = dds_create_participant (DDS_DOMAIN_DEFAULT, NULL, NULL);
+    dds_entity_t topic = dds_create_topic (participant, &MyData_Msg_desc, "MyTopicName", NULL, NULL);
+    dds_entity_t reader = dds_create_reader (participant, topic, NULL, NULL);
 
-int main() {
-    printf("DDS Subscriber starting...Guru\n");
-    // 1. Initialize DDS DomainParticipant
-    // 2. Create Subscriber and Topic (e.g., "HelloWorldTopic")
-    // 3. Create a DataReader and attach a Listener
-    // 4. Keep the main thread alive to receive data (e.g., a long sleep or wait)
-    // 5. Cleanup (on exit)
-    printf("Subscriber shutting down.Guru\n");
+    void *samples[1];
+    dds_sample_info_t info[1];
+
+    // ... logic for polling/waiting for data and reading ...
+
+    dds_delete (participant);
     return 0;
 }

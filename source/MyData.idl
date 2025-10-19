@@ -1,0 +1,5 @@
+struct MyData_Msg
+{
+    long userID;
+    string<256> message;
+};

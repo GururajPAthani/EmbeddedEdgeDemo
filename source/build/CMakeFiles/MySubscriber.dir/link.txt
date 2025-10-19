@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/MySubscriber.dir/subscriber.c.o CMakeFiles/MySubscriber.dir/MyData.c.o -o MySubscriber  -lddsc 

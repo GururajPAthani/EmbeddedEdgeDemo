@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/MyPublisher.dir/publisher.c.o CMakeFiles/MyPublisher.dir/MyData.c.o -o MyPublisher  -lddsc 
