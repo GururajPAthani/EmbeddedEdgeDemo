@@ -102,5 +102,73 @@ Finally, apply the configuration, forcing k3s to use the newly imported image.
 
     ```bash
     # Use the label to view logs for the running subscriber pod
+
+
+
+
+
+
+    That's a great idea for a reference! Here is the summarized, end-to-end process for building a C DDS application using an IDL file and CMake with the specific fixes we identified.
+
+## DDS Project Build Summary (C/CycloneDDS)
+
+This summary assumes you are in your project's source directory (e.g., `/home/gururaj/Projects/soafee/simple_demo/source/`).
+
+***
+
+## Step 1: Create Source Files
+
+| File | Purpose | Key Content |
+| :--- | :--- | :--- |
+| **`MyData.idl`** | Defines your data structure (e.g., `struct Msg { ... }`). | The DDS data type definition. |
+| **`publisher.c`** | Contains the code to send data. | Includes `MyData.h`. Must use the corrected function name, e.g., `MyData_Msg__alloc()`. |
+| **`subscriber.c`** | Contains the code to receive data. | Includes `MyData.h`. |
+| **`CMakeLists.txt`** | The build script. | Specifies the IDL compilation, source files, and links to the DDS library. |
+
+***
+
+## Step 2: Configure the Build (`CMakeLists.txt`)
+
+The core of the successful configuration lies in two fixes: correcting the `idlc_generate` keyword and directly compiling the generated C file.
+
+| Action | Command | Rationale |
+| :--- | :--- | :--- |
+| **1. Find DDS** | `find_package(CycloneDDS REQUIRED)` | Locates necessary headers and libraries. |
+| **2. Generate Code** | `idlc_generate(TARGET MyData_lib FILES MyData.idl)` | Runs the IDL compiler to create `MyData.c` and `MyData.h`. **FIX 1:** Uses `FILES`, not `IDL_FILES`. |
+| **3. Create Executable** | `add_executable(MyPublisher publisher.c ${CMAKE_CURRENT_BINARY_DIR}/MyData.c)` | **FIX 2:** Directly includes the generated `MyData.c` source file for compilation. |
+| **4. Link Libraries** | `target_link_libraries(MyPublisher PRIVATE ddsc)` | Links only the core DDS library (`ddsc`). The generated code is compiled directly, so no need to link `MyData_lib`. |
+
+***
+
+## Step 3: Clean, Configure, and Build
+
+Always clean the build directory to ensure CMake picks up the updated file list.
+
+| Command | Purpose |
+| :--- | :--- |
+| **Clean** | `rm -rf build` | Deletes the old build cache and files. |
+| **Create Dir** | `mkdir build && cd build` | Creates and navigates into a new build directory. |
+| **Configure** | `cmake ..` | Processes the `CMakeLists.txt` to create build files (Makefiles). |
+| **Build** | `cmake --build .` or `make` | Compiles the sources and links the executables (`MyPublisher`, `MySubscriber`). |
+
+***
+
+## Step 4: Fix C Code Function Naming
+
+If you encounter the `undefined reference` error after building, the issue is likely a **function name mismatch** in your C source files.
+
+| Error Symptom | Correction | Rationale |
+| :--- | :--- | :--- |
+| `undefined reference to MyData_Msg_alloc` | **Edit `publisher.c`** and change the call from `MyData_Msg_alloc()` to `MyData_Msg__alloc()`. | CycloneDDS IDLC often uses **two underscores** (`__`) in generated C function names. |
+
+***
+
+## Step 5: Run the Executables
+
+Run the executables from the **build directory** in separate terminals for them to connect and communicate.
+
+| Terminal 1 (Subscriber) | Terminal 2 (Publisher) |
+| :--- | :--- |
+| `./MySubscriber` | `./MyPublisher` |
     sudo kubectl logs -f -l app=dds-subscriber
     ```
