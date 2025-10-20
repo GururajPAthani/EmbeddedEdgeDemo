@@ -15,17 +15,13 @@ spec:
         app: dds-publisher
     spec:
       containers:
-      - name: publisher-container
-        # Update this to your local image name/tag
+      - name: dds-publisher
         image: dds-app:latest
+        imagePullPolicy: Never # Use 'Never' or 'IfNotPresent' since the image is built locally
         
-        # This is CRITICAL for using a locally built image
-        imagePullPolicy: IfNotPresent 
+        # 🐛 THE FIX: Explicitly set the command to run the publisher binary
+        # This overrides the Dockerfile's ENTRYPOINT/CMD, preventing the shell crash.
+        command: ["/usr/local/bin/publisher"]
         
-        # Command to execute the compiled C publisher program
-        command: ["/bin/publisher"]
-        
-        # Optional: Define DDS discovery port (UDP 7400 is common default)
-        ports:
-        - containerPort: 7400
-          protocol: UDP
+        # If your publisher needed arguments (e.g., a config file path), you would use:
+        # args: ["/etc/dds/config.xml"]

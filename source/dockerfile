@@ -1,44 +1,39 @@
-# Dockerfile
-
-# --- Stage 1: Build Stage (For compilation) ---
+# --- Stage 1: Build Stage ---
 FROM ubuntu:22.04 AS builder
 
-# 1. Install dependencies for C compilation and DDS library
 RUN apt-get update && \
-    apt-get install -y build-essential cmake git wget libasio-dev && \
+    apt-get install -y --no-install-recommends \
+        build-essential cmake git wget \
+        libasio-dev python3-dev libncurses-dev doxygen python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-# NOTE: You must replace the following section with actual steps 
-# to download, build, and install your chosen DDS library (e.g., Fast DDS, RTI Connext)
-# This is a placeholder for your specific DDS setup.
+# Build CycloneDDS and idlc
+WORKDIR /usr/src/cyclonedds
+RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git . && \
+    mkdir build && cd build && \
+    cmake -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DDDS_SECURITY=OFF -DBUILD_IDLC=ON .. && \
+    make -j$(nproc) && \
+    make install
 
-# 2. Copy and Compile your C programs
+# Copy application source
 WORKDIR /app
-COPY publisher.c subscriber.c /app/
+COPY publisher.c subscriber.c MyData.idl /app/
 
-# Placeholder for actual compilation commands, including DDS linking flags
-# Example: gcc -o publisher publisher.c -l<dds_library_name>
-RUN gcc -o publisher publisher.c -I/usr/include -L/usr/lib -lpthread -lm -lrt 
-RUN gcc -o subscriber subscriber.c -I/usr/include -L/usr/lib -lpthread -lm -lrt 
+# Generate C source files from IDL
+RUN idlc MyData.idl
 
+# Compile the applications
+RUN gcc -o publisher publisher.c MyData.c -I/usr/local/include -L/usr/local/lib -lddsc -lpthread -lm -lrt
+RUN gcc -o subscriber subscriber.c MyData.c -I/usr/local/include -L/usr/local/lib -lddsc -lpthread -lm -lrt
 
-# --- Stage 2: Final Runtime Stage (Minimal image for deployment) ---
+# --- Stage 2: Runtime Stage ---
 FROM ubuntu:22.04
 
-# 1. Install runtime dependencies if needed (e.g., specific shared libraries for DDS)
-# This stage should ONLY contain what is necessary to run the compiled executables.
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
-# 2. Copy the compiled binaries and required DDS runtime libraries from the builder stage
-WORKDIR /bin
+WORKDIR /usr/local/bin
+COPY --from=builder /app/publisher /usr/local/bin/
+COPY --from=builder /app/subscriber /usr/local/bin/
+COPY --from=builder /usr/local/lib/libddsc.so.0 /usr/local/lib/
 
-# Copy the compiled executables
-COPY --from=builder /app/publisher /bin/publisher
-COPY --from=builder /app/subscriber /bin/subscriber
-
-# CRITICAL: Copy any DDS library shared objects (.so files) your programs depend on.
-# You will need to find the specific path for your DDS library's files!
-# Example placeholder:
-# COPY --from=builder /usr/local/lib/libfastrtps.so /usr/lib/libfastrtps.so
-
-# Set a generic entry point (either publisher or subscriber will be run via the k8s YAML)
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/usr/local/bin/bash"]

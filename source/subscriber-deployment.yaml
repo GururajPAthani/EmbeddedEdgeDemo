@@ -15,17 +15,13 @@ spec:
         app: dds-subscriber
     spec:
       containers:
-      - name: subscriber-container
-        # Update this to your local image name/tag
+      - name: dds-subscriber
         image: dds-app:latest
+        imagePullPolicy: Never # Use 'Never' or 'IfNotPresent' since the image is built locally
         
-        # This is CRITICAL for using a locally built image
-        imagePullPolicy: IfNotPresent
+        # 🐛 THE FIX: Explicitly set the command to run the subscriber binary
+        # This overrides the Dockerfile's ENTRYPOINT/CMD, preventing the shell crash.
+        command: ["/usr/local/bin/subscriber"]
         
-        # Command to execute the compiled C subscriber program
-        command: ["/bin/subscriber"]
-        
-        # Optional: Define DDS discovery port (UDP 7400 is common default)
-        ports:
-        - containerPort: 7400
-          protocol: UDP
+        # If your subscriber needed arguments, you would use:
+        # args: ["--topic", "MyTopic"]
