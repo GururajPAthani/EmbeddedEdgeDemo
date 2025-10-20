@@ -1,5 +1,3 @@
-That's a fantastic idea\! You overcame several tricky hurdles involving Docker, k3s's use of containerd, and container lifecycle management.
-
 Here is the complete, consolidated, **working summary** of all the necessary steps, from writing the C code to achieving a stable, running DDS application orchestrated by k3s.
 
 -----
